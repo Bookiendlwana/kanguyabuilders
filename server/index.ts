@@ -22,17 +22,18 @@ app.get('/api/health', (req, res) => {
 async function startServer() {
   if (process.env.NODE_ENV === 'production') {
     // Serve static files from the client build directory in production
-    app.use(express.static(join(__dirname, '../dist/public')));
+    app.use(express.static(join(__dirname, 'public')));
     
     // Serve the React app for all non-API routes in production
     app.get('*', (req, res) => {
-      res.sendFile(join(__dirname, '../dist/public/index.html'));
+      res.sendFile(join(__dirname, 'public/index.html'));
     });
   } else {
     // Development mode - integrate with Vite
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
+      root: join(__dirname, '../client'),
     });
 
     app.use(vite.ssrFixStacktrace);
