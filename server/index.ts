@@ -2,7 +2,6 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { createServer } from 'http';
-import { createServer as createViteServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,23 +29,32 @@ async function startServer() {
     });
   } else {
     // Development mode - integrate with Vite
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-      root: join(__dirname, '../client'),
-    });
+    try {
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+        root: join(__dirname, '../client'),
+        configFile: join(__dirname, '../vite.config.ts'),
+      });
 
-    app.use(vite.ssrFixStacktrace);
-    app.use(vite.middlewares);
+      app.use(vite.ssrFixStacktrace);
+      app.use(vite.middlewares);
+    } catch (error) {
+      console.error('Failed to create Vite server:', error);
+      // Fallback: serve static files if Vite fails
+      app.use(express.static(join(__dirname, '../client')));
+      app.get('*', (req, res) => {
+        res.sendFile(join(__dirname, '../client/index.html'));
+      });
+    }
   }
 
   const server = createServer(app);
 
-  server.listen(PORT, () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`Development server: http://localhost:${PORT}`);
-    }
+    console.log(`Local: http://localhost:${PORT}`);
   });
 }
 
