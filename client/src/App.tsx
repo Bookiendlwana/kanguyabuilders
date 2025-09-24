@@ -8,6 +8,7 @@ import Projects from './components/Projects';
 import Reviews from './components/Reviews';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import { Toaster } from './components/ui/toaster';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           </Route>
         </main>
         <Footer />
+        <Toaster />
       </div>
     </Router>
   );

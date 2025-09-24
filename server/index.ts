@@ -17,6 +17,24 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
+// API route for quote requests
+app.post('/api/quote', (req, res) => {
+  const { name, email, phone, service, message } = req.body;
+  
+  // Basic validation
+  if (!name || !email || !phone || !service || !message) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  
+  // In a real app, you would save to database and send email
+  console.log('Quote request received:', { name, email, phone, service, message });
+  
+  res.json({ 
+    success: true, 
+    message: 'Quote request received. We will contact you within 24 hours.' 
+  });
+});
+
 async function startServer() {
   if (process.env.NODE_ENV === 'production') {
     // Production: serve static files
@@ -30,7 +48,8 @@ async function startServer() {
       const { createServer: createViteServer } = await import('vite');
       const vite = await createViteServer({
         server: { middlewareMode: true },
-        appType: 'spa'
+        appType: 'spa',
+        root: join(__dirname, '../client')
       });
       
       app.use(vite.ssrFixStacktrace);

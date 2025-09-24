@@ -29,21 +29,30 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Quote Request Sent!",
-        description: "We'll get back to you within 24 hours with a detailed quote.",
+      const response = await fetch('/api/quote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
-      
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        service: '',
-        message: ''
-      });
+
+      if (response.ok) {
+        toast({
+          title: "Quote Request Sent!",
+          description: "We'll get back to you within 24 hours with a detailed quote.",
+        });
+        
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          service: '',
+          message: ''
+        });
+      } else {
+        throw new Error('Failed to send quote request');
+      }
     } catch (error) {
       toast({
         title: "Error",
