@@ -7,7 +7,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client/src"),
-      "@shared": path.resolve(__dirname, "shared"),
     },
   },
   root: "client",
@@ -18,11 +17,5 @@ export default defineConfig({
   server: {
     port: 5173,
     host: "0.0.0.0",
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-      },
-    },
   },
 });

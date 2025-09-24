@@ -35,38 +35,38 @@ app.post('/api/quote', (req, res) => {
   });
 });
 
-async function startServer() {
-  if (process.env.NODE_ENV === 'production') {
-    // Production: serve static files
-    app.use(express.static(join(__dirname, 'public')));
-    app.get('*', (req, res) => {
-      res.sendFile(join(__dirname, 'public/index.html'));
+// Development mode - use Vite dev server
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+      root: join(__dirname, '../client'),
+      configFile: join(__dirname, '../vite.config.ts')
     });
-  } else {
-    // Development: integrate with Vite
-    try {
-      const { createServer: createViteServer } = await import('vite');
-      const vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: 'spa',
-        root: join(__dirname, '../client')
-      });
-      
-      app.use(vite.ssrFixStacktrace);
-      app.use(vite.middlewares);
-    } catch (error) {
-      console.error('Vite server error:', error);
-      // Fallback to serving client directory directly
-      app.use(express.static(join(__dirname, '../client')));
-      app.get('*', (req, res) => {
-        res.sendFile(join(__dirname, '../client/index.html'));
-      });
-    }
+    
+    app.use(vite.ssrFixStacktrace);
+    app.use(vite.middlewares);
+    
+    console.log('✅ Vite dev server integrated successfully');
+  } catch (error) {
+    console.error('❌ Failed to start Vite dev server:', error);
+    // Fallback: serve static files
+    app.use(express.static(join(__dirname, '../client')));
+    app.get('*', (req, res) => {
+      res.sendFile(join(__dirname, '../client/index.html'));
+    });
   }
-
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+} else {
+  // Production mode - serve built files
+  app.use(express.static(join(__dirname, '../dist/public')));
+  app.get('*', (req, res) => {
+    res.sendFile(join(__dirname, '../dist/public/index.html'));
   });
 }
 
-startServer().catch(console.error);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📁 Serving from: ${process.env.NODE_ENV === 'production' ? 'dist/public' : 'client'}`);
+});
